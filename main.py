@@ -16,11 +16,17 @@ def main():
     clock = pygame.time.Clock()
 
     start_text = Text("Press ENTER to start", 50)
-    center_text = (
+    reset_text = Text("Press R to reset", 50)
+    center_start_text = (
         int(settings.WIDTH / 2 - start_text.rect.w / 2),
-        int(settings.HEIGHT / 2 - start_text.rect.h / 2),
+        start_text.rect.h
     )
-    start_text.set_position(center_text)
+    center_reset_text = (
+        int(settings.WIDTH / 2 - reset_text.rect.w / 2),
+        reset_text.rect.h
+    )
+    start_text.set_position(center_start_text)
+    reset_text.set_position(center_reset_text)
     text_group = pygame.sprite.RenderUpdates(start_text)
 
     start = False
@@ -43,6 +49,14 @@ def main():
                 if event.key == K_RETURN:
                     start = (0, 0)
                     text_group.empty()
+                    text_group.add(reset_text)
+                
+                # Reset maze and prepare to generate a new maze.
+                if event.key == K_r:
+                    start = False
+                    text_group.empty()
+                    text_group.add(start_text)
+                    maze = Maze(start, settings.GRID_POS, settings.GRID_SIZE, settings.CELL_SIZE)
 
         if start:
             maze.grid, start = maze.visualize_maze(
