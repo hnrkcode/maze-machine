@@ -6,10 +6,9 @@ import settings
 class Maze:
     def __init__(self, start, grid_pos, grid_size, cell_size):
         self.w, self.h = int(grid_size[0] / cell_size), int(grid_size[0] / cell_size)
-        # self.grid = self.kill_mode(start, grid_pos, grid_size, cell_size)
         self.grid = self.generate_grid(grid_size, cell_size)
 
-    def visualize_maze(self, grid, pos, grid_pos, grid_size, cell_size):
+    def kill_mode(self, grid, pos, grid_pos, grid_size, cell_size):
         adjacents = self.get_adjacent(grid, pos)
 
         try:
@@ -54,56 +53,6 @@ class Maze:
             grid[adjacents[direction]][self.inverse(direction)] = False
 
         return grid, pos
-
-    def kill_mode(self, pos, grid_pos, grid_size, cell_size):
-        grid = self.generate_grid(grid_size, cell_size)
-
-        while True:
-
-            adjacents = self.get_adjacent(grid, pos)
-
-            try:
-                direction = random.choice(list(adjacents.keys()))
-            except IndexError:
-                direction = "stop"
-
-            if direction == "up":
-                grid[pos]["up"] = False
-                grid[pos]["visited"] = True
-                pos = adjacents[direction]
-                grid[pos]["down"] = False
-                grid[pos]["visited"] = True
-            elif direction == "right":
-                grid[pos]["right"] = False
-                grid[pos]["visited"] = True
-                pos = adjacents[direction]
-                grid[pos]["left"] = False
-                grid[pos]["visited"] = True
-            elif direction == "down":
-                grid[pos]["down"] = False
-                grid[pos]["visited"] = True
-                pos = adjacents[direction]
-                grid[pos]["up"] = False
-                grid[pos]["visited"] = True
-            elif direction == "left":
-                grid[pos]["left"] = False
-                grid[pos]["visited"] = True
-                pos = adjacents[direction]
-                grid[pos]["right"] = False
-                grid[pos]["visited"] = True
-            else:
-                pos = self.hunt_mode(grid)
-
-                if pos == False:
-                    break
-
-                grid[pos]["visited"] = True
-                adjacents = self.get_adjacent(grid, pos, True)
-                direction = random.choice(list(adjacents.keys()))
-                grid[pos][direction] = False
-                grid[adjacents[direction]][self.inverse(direction)] = False
-
-        return grid
 
     def hunt_mode(self, grid):
 
@@ -182,7 +131,7 @@ class Maze:
             dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), (dy + cell_size)
 
         return cells
-    
+
     def calc_grid_pos(self, grid_size):
         """Position grid in the center of the window."""
 

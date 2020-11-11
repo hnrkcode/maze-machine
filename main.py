@@ -116,7 +116,7 @@ def main():
                     w_key_held = False
 
         if start:
-            maze.grid, start = maze.visualize_maze(
+            maze.grid, start = maze.kill_mode(
                 maze.grid,
                 start,
                 settings.GRID_POS,
