@@ -1,9 +1,12 @@
 import random
 
-import settings
+try:
+    from maze.utils import settings
+except ModuleNotFoundError:
+    from utils import settings
 
 
-class Maze:
+class HuntAndKillMaze:
     def __init__(self, start, grid_pos, grid_size, cell_size):
         self.w, self.h = int(grid_size[0] / cell_size), int(grid_size[0] / cell_size)
         self.grid = self.generate_grid(grid_size, cell_size)

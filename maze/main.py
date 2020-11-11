@@ -4,9 +4,14 @@ import random
 import pygame
 from pygame.locals import *
 
-import settings
-from maze import Maze
-from text import Text
+try:
+    from maze.algorithm.maze import HuntAndKillMaze as Maze
+    from maze.utils import settings
+    from maze.utils.text import Text
+except ModuleNotFoundError:
+    from algorithm.maze import HuntAndKillMaze as Maze
+    from utils import settings
+    from utils.text import Text
 
 
 def main():
