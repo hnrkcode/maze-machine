@@ -15,35 +15,28 @@ def main():
     screen = pygame.display.set_mode(settings.WINDOW_SIZE)
     clock = pygame.time.Clock()
 
-    start_text = Text("Press ENTER to start", 50)
-    reset_text = Text("Press R to reset", 50)
-    center_start_text = (
-        int(settings.WIDTH / 2 - start_text.rect.w / 2),
-        start_text.rect.h,
-    )
-    center_reset_text = (
-        int(settings.WIDTH / 2 - reset_text.rect.w / 2),
-        reset_text.rect.h,
-    )
-    start_text.set_position(center_start_text)
-    reset_text.set_position(center_reset_text)
-    text_group = pygame.sprite.RenderUpdates(start_text)
-
     cell_size = settings.CELL_SIZE
-    size_text = Text(
-        f"cell size: {cell_size}",
-        20,
-        (20, (settings.HEIGHT - settings.GRID_SIZE[1]) / 2),
-    )
-    size_group = pygame.sprite.RenderUpdates(size_text)
-
-    start = False
-    maze = Maze(start, settings.GRID_POS, settings.GRID_SIZE, cell_size)
-
+    grid_size = list(settings.GRID_SIZE)
     h_key_held = False
     w_key_held = False
+    start = False
 
-    grid_size = list(settings.GRID_SIZE)
+    start_text = Text("Press ENTER to start", 50)
+    start_text.center_pos(settings.WIDTH)
+
+    reset_text = Text("Press R to reset", 50)
+    reset_text.center_pos(settings.WIDTH)
+
+    texts = {
+        "cell_size": Text(f"Cell: {cell_size}x{cell_size}", 20),
+        "grid_size": Text(f"Grid: {grid_size[0]}x{grid_size[1]}", 20),
+    }
+    text_layout(texts, (20, (settings.HEIGHT - grid_size[1]) / 2), 20)
+
+    text_group = pygame.sprite.RenderUpdates(start_text)
+    size_group = pygame.sprite.RenderUpdates(texts.values())
+
+    maze = Maze(start, settings.GRID_POS, grid_size, cell_size)
 
     while True:
 
@@ -67,20 +60,9 @@ def main():
                 start, maze, grid_size = reset(
                     text_group, start_text, maze, cell_size, grid_size
                 )
-                size_text.update_text(f"cell size: {cell_size}")
+                texts["cell_size"].update_text(f"Cell: {cell_size}x{cell_size}")
 
             # Change grid width.
-            if event.type == MOUSEWHEEL and h_key_held:
-                if event.y > 0 and grid_size[1] < settings.GRID_SIZE[1]:
-                    grid_size[1] += cell_size
-                if event.y < 0 and (grid_size[1] - cell_size) > cell_size:
-                    grid_size[1] -= cell_size
-
-                start, maze, grid_size = reset(
-                    text_group, start_text, maze, cell_size, grid_size
-                )
-
-            # Change grid height.
             if event.type == MOUSEWHEEL and w_key_held:
                 if event.y > 0 and grid_size[0] < settings.GRID_SIZE[0]:
                     grid_size[0] += cell_size
@@ -90,6 +72,19 @@ def main():
                 start, maze, grid_size = reset(
                     text_group, start_text, maze, cell_size, grid_size
                 )
+                texts["grid_size"].update_text(f"Grid: {grid_size[0]}x{grid_size[1]}")
+
+            # Change grid height.
+            if event.type == MOUSEWHEEL and h_key_held:
+                if event.y > 0 and grid_size[1] < settings.GRID_SIZE[1]:
+                    grid_size[1] += cell_size
+                if event.y < 0 and (grid_size[1] - cell_size) > cell_size:
+                    grid_size[1] -= cell_size
+
+                start, maze, grid_size = reset(
+                    text_group, start_text, maze, cell_size, grid_size
+                )
+                texts["grid_size"].update_text(f"Grid: {grid_size[0]}x{grid_size[1]}")
 
             if event.type == KEYDOWN:
 
@@ -99,12 +94,14 @@ def main():
                     text_group.empty()
                     text_group.add(reset_text)
 
-                # Reset maze and prepare to generate a new maze.
+                # Reset everything.
                 if event.key == K_r:
                     cell_size = settings.CELL_SIZE
                     start, maze, grid_size = reset(
                         text_group, start_text, maze, cell_size, settings.GRID_SIZE
                     )
+                    texts["cell_size"].update_text(f"Cell: {cell_size}x{cell_size}")
+                    texts["grid_size"].update_text(f"Grid: {grid_size[0]}x{grid_size[1]}")
 
                 if event.key == K_h:
                     h_key_held = True
@@ -181,6 +178,16 @@ def reset(group, text, maze, size, grid_size):
     grid_size = list(grid_size)
 
     return start, maze, grid_size
+
+
+def text_layout(texts, pos, spacing):
+    "Set layout positions for text objects."
+
+    x, y = pos
+
+    for text in texts.values():
+        text.set_pos((x, y))
+        y += spacing
 
 
 if __name__ == "__main__":
