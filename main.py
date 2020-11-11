@@ -101,6 +101,7 @@ def main():
 
                 # Reset maze and prepare to generate a new maze.
                 if event.key == K_r:
+                    cell_size = settings.CELL_SIZE
                     start, maze, grid_size = reset(
                         text_group, start_text, maze, cell_size, settings.GRID_SIZE
                     )

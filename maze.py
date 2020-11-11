@@ -1,11 +1,13 @@
 import random
 
+import settings
+
 
 class Maze:
     def __init__(self, start, grid_pos, grid_size, cell_size):
         self.w, self.h = int(grid_size[0] / cell_size), int(grid_size[0] / cell_size)
         # self.grid = self.kill_mode(start, grid_pos, grid_size, cell_size)
-        self.grid = self.generate_grid(grid_pos, grid_size, cell_size)
+        self.grid = self.generate_grid(grid_size, cell_size)
 
     def visualize_maze(self, grid, pos, grid_pos, grid_size, cell_size):
         adjacents = self.get_adjacent(grid, pos)
@@ -54,7 +56,7 @@ class Maze:
         return grid, pos
 
     def kill_mode(self, pos, grid_pos, grid_size, cell_size):
-        grid = self.generate_grid(grid_pos, grid_size, cell_size)
+        grid = self.generate_grid(grid_size, cell_size)
 
         while True:
 
@@ -154,10 +156,11 @@ class Maze:
 
         return adjacents
 
-    def generate_grid(self, grid_pos, grid_size, cell_size):
+    def generate_grid(self, grid_size, cell_size):
         """Create all cells in the grid."""
 
         cells = {}
+        grid_pos = self.calc_grid_pos(grid_size)
         w, h = grid_size
         x, y = 0, 0
         dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), grid_pos[1]
@@ -179,6 +182,14 @@ class Maze:
             dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), (dy + cell_size)
 
         return cells
+    
+    def calc_grid_pos(self, grid_size):
+        """Position grid in the center of the window."""
+
+        x = int(settings.WIDTH / 2 - grid_size[0] / 2)
+        y = int(settings.HEIGHT / 2 - grid_size[1] / 2)
+
+        return (x, y)
 
     def calc_dx(self, pos, size, cell):
         """Keeps the grid horizontally centered on the screen."""
