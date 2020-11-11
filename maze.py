@@ -5,7 +5,7 @@ class Maze:
     def __init__(self, start, grid_pos, grid_size, cell_size):
         self.w, self.h = int(grid_size[0] / cell_size), int(grid_size[0] / cell_size)
         # self.grid = self.kill_mode(start, grid_pos, grid_size, cell_size)
-        self.grid = self.generate_grid(start, grid_pos, grid_size, cell_size)
+        self.grid = self.generate_grid(grid_pos, grid_size, cell_size)
 
     def visualize_maze(self, grid, pos, grid_pos, grid_size, cell_size):
         adjacents = self.get_adjacent(grid, pos)
@@ -54,7 +54,7 @@ class Maze:
         return grid, pos
 
     def kill_mode(self, pos, grid_pos, grid_size, cell_size):
-        grid = self.generate_grid(pos, grid_pos, grid_size, cell_size)
+        grid = self.generate_grid(grid_pos, grid_size, cell_size)
 
         while True:
 
@@ -154,13 +154,13 @@ class Maze:
 
         return adjacents
 
-    def generate_grid(self, pos, grid_pos, grid_size, cell_size):
+    def generate_grid(self, grid_pos, grid_size, cell_size):
         """Create all cells in the grid."""
 
         cells = {}
         w, h = grid_size
         x, y = 0, 0
-        dx, dy = 0 + grid_pos[0], 0 + grid_pos[1]
+        dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), grid_pos[1]
 
         for _ in range(int(h / cell_size)):
             for _ in range(int(w / cell_size)):
@@ -172,14 +172,22 @@ class Maze:
                     "visited": False,
                     "walls": self.calc_lines((dx, dy), (cell_size, cell_size)),
                 }
-                x += 1
-                dx += cell_size
-            x = 0
-            dx = 0 + grid_pos[0]
-            dy += cell_size
-            y += 1
+
+                x, dx = (x + 1), (dx + cell_size)
+
+            x, y = 0, (y + 1)
+            dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), (dy + cell_size)
 
         return cells
+
+    def calc_dx(self, pos, size, cell):
+        """Keeps the grid horizontally centered on the screen."""
+
+        x = pos[0]
+        w = size[0]
+        dx = x + int((w - cell * int(w / cell)) / 2)
+
+        return dx
 
     def calc_lines(self, pos, size):
         x, y = pos
