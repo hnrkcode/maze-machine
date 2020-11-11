@@ -30,11 +30,20 @@ def main():
     text_group = pygame.sprite.RenderUpdates(start_text)
 
     cell_size = settings.CELL_SIZE
-    size_text = Text(f"cell size: {cell_size}", 20, (20, (settings.HEIGHT - settings.GRID_SIZE[1]) / 2))
+    size_text = Text(
+        f"cell size: {cell_size}",
+        20,
+        (20, (settings.HEIGHT - settings.GRID_SIZE[1]) / 2),
+    )
     size_group = pygame.sprite.RenderUpdates(size_text)
 
     start = False
     maze = Maze(start, settings.GRID_POS, settings.GRID_SIZE, cell_size)
+
+    h_key_held = False
+    w_key_held = False
+
+    grid_size = list(settings.GRID_SIZE)
 
     while True:
 
@@ -48,14 +57,39 @@ def main():
                 return
 
             # Change cell size with scrolling.
-            if event.type == MOUSEWHEEL:
-                if event.y > 0 and cell_size < 100:
-                    cell_size += 1
-                if event.y < 0 and cell_size > 10:
-                    cell_size -= 1
+            if event.type == MOUSEWHEEL and not h_key_held and not w_key_held:
+                if grid_size[0] / cell_size > 1 and grid_size[1] / cell_size > 1:
+                    if event.y > 0 and cell_size < 100:
+                        cell_size += 1
+                    if event.y < 0 and cell_size > 10:
+                        cell_size -= 1
 
-                start, maze = reset(text_group, start_text, maze, cell_size)
+                start, maze, grid_size = reset(
+                    text_group, start_text, maze, cell_size, grid_size
+                )
                 size_text.update_text(f"cell size: {cell_size}")
+
+            # Change grid width.
+            if event.type == MOUSEWHEEL and h_key_held:
+                if event.y > 0 and grid_size[1] < settings.GRID_SIZE[1]:
+                    grid_size[1] += cell_size
+                if event.y < 0 and (grid_size[1] - cell_size) > cell_size:
+                    grid_size[1] -= cell_size
+
+                start, maze, grid_size = reset(
+                    text_group, start_text, maze, cell_size, grid_size
+                )
+
+            # Change grid height.
+            if event.type == MOUSEWHEEL and w_key_held:
+                if event.y > 0 and grid_size[0] < settings.GRID_SIZE[0]:
+                    grid_size[0] += cell_size
+                if event.y < 0 and (grid_size[0] - cell_size) > cell_size:
+                    grid_size[0] -= cell_size
+
+                start, maze, grid_size = reset(
+                    text_group, start_text, maze, cell_size, grid_size
+                )
 
             if event.type == KEYDOWN:
 
@@ -67,14 +101,28 @@ def main():
 
                 # Reset maze and prepare to generate a new maze.
                 if event.key == K_r:
-                    start, maze = reset(text_group, start_text, maze, cell_size)
+                    start, maze, grid_size = reset(
+                        text_group, start_text, maze, cell_size, settings.GRID_SIZE
+                    )
+
+                if event.key == K_h:
+                    h_key_held = True
+                if event.key == K_w:
+                    w_key_held = True
+
+            if event.type == KEYUP:
+
+                if event.key == K_h:
+                    h_key_held = False
+                if event.key == K_w:
+                    w_key_held = False
 
         if start:
             maze.grid, start = maze.visualize_maze(
                 maze.grid,
                 start,
                 settings.GRID_POS,
-                settings.GRID_SIZE,
+                grid_size,
                 cell_size,
             )
 
@@ -122,15 +170,16 @@ def main():
         pygame.display.update()
 
 
-def reset(group, text, maze, size):
+def reset(group, text, maze, size, grid_size):
     """Reset grid."""
 
     start = False
     group.empty()
     group.add(text)
-    maze = Maze(start, settings.GRID_POS, settings.GRID_SIZE, size)
+    maze = Maze(start, settings.GRID_POS, grid_size, size)
+    grid_size = list(grid_size)
 
-    return start, maze
+    return start, maze, grid_size
 
 
 if __name__ == "__main__":
