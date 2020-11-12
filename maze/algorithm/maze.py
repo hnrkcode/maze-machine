@@ -8,11 +8,10 @@ except ModuleNotFoundError:
 
 class HuntAndKillMaze:
     def __init__(self, start, grid_pos, grid_size, cell_size):
-        self.w, self.h = int(grid_size[0] / cell_size), int(grid_size[0] / cell_size)
         self.grid = self.generate_grid(grid_size, cell_size)
 
     def kill_mode(self, grid, pos, grid_pos, grid_size, cell_size):
-        adjacents = self.get_adjacent(grid, pos)
+        adjacents = self.get_adjacent(grid, grid_size, cell_size, pos)
 
         try:
             direction = random.choice(list(adjacents.keys()))
@@ -44,23 +43,23 @@ class HuntAndKillMaze:
             grid[pos]["right"] = False
             grid[pos]["visited"] = True
         else:
-            pos = self.hunt_mode(grid)
+            pos = self.hunt_mode(grid, grid_size, cell_size)
 
             if pos == False:
                 return grid, pos
 
             grid[pos]["visited"] = True
-            adjacents = self.get_adjacent(grid, pos, True)
+            adjacents = self.get_adjacent(grid, grid_size, cell_size, pos, True)
             direction = random.choice(list(adjacents.keys()))
             grid[pos][direction] = False
             grid[adjacents[direction]][self.inverse(direction)] = False
 
         return grid, pos
 
-    def hunt_mode(self, grid):
+    def hunt_mode(self, grid, grid_size, cell_size):
 
         for key, value in grid.items():
-            adjacents = self.get_adjacent(grid, key, True)
+            adjacents = self.get_adjacent(grid, grid_size, cell_size, key, True)
             if not value["visited"] and adjacents:
                 return key
 
@@ -76,35 +75,24 @@ class HuntAndKillMaze:
         if direction == "right":
             return "left"
 
-    def get_adjacent(self, grid, pos, visited=False):
+    def get_adjacent(self, grid, grid_size, cell_size, pos, visited=False):
 
+        w, h = int(grid_size[0] / cell_size), int(grid_size[1] / cell_size)
         x, y = pos
 
         adjacents = {}
 
-        try:
-            if y > 0 and grid[(x, y - 1)]["visited"] == visited:
-                adjacents["up"] = (x, y - 1)
-        except KeyError:
-            pass
+        if y > 0 and grid[(x, y - 1)]["visited"] == visited:
+            adjacents["up"] = (x, y - 1)
 
-        try:
-            if x < self.w - 1 and grid[(x + 1, y)]["visited"] == visited:
-                adjacents["right"] = (x + 1, y)
-        except KeyError:
-            pass
+        if x < w - 1 and grid[(x + 1, y)]["visited"] == visited:
+            adjacents["right"] = (x + 1, y)
 
-        try:
-            if y < self.h - 1 and grid[(x, y + 1)]["visited"] == visited:
-                adjacents["down"] = (x, y + 1)
-        except KeyError:
-            pass
+        if y < h - 1 and grid[(x, y + 1)]["visited"] == visited:
+            adjacents["down"] = (x, y + 1)
 
-        try:
-            if x > 0 and grid[(x - 1, y)]["visited"] == visited:
-                adjacents["left"] = (x - 1, y)
-        except KeyError:
-            pass
+        if x > 0 and grid[(x - 1, y)]["visited"] == visited:
+            adjacents["left"] = (x - 1, y)
 
         return adjacents
 
