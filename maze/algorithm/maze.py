@@ -19,10 +19,10 @@ class HuntAndKillMaze:
         direction = self._get_direction(adjacents)
 
         if direction in ["up", "right", "down", "left"]:
-            grid[pos][direction] = False
+            grid[pos][direction]["wall"] = False
             grid[pos]["visited"] = True
             pos = adjacents[direction]
-            grid[pos][self._inverse(direction)] = False
+            grid[pos][self._inverse(direction)]["wall"] = False
             grid[pos]["visited"] = True
         else:
             pos = self._hunt_mode(grid, grid_size, cell_size)
@@ -31,8 +31,8 @@ class HuntAndKillMaze:
                 grid[pos]["visited"] = True
                 adjacents = self._get_adjacent(grid, grid_size, cell_size, pos, True)
                 direction = self._get_direction(adjacents)
-                grid[pos][direction] = False
-                grid[adjacents[direction]][self._inverse(direction)] = False
+                grid[pos][direction]["wall"] = False
+                grid[adjacents[direction]][self._inverse(direction)]["wall"] = False
 
         return grid, pos
 
@@ -102,13 +102,13 @@ class HuntAndKillMaze:
 
         for _ in range(int(h / cell_size)):
             for _ in range(int(w / cell_size)):
+                lines = self._calc_lines((dx, dy), (cell_size, cell_size))
                 cells[(x, y)] = {
-                    "up": True,
-                    "right": True,
-                    "down": True,
-                    "left": True,
+                    "up": {"wall": True, "line": lines["up"]},
+                    "right": {"wall": True, "line": lines["right"]},
+                    "down": {"wall": True, "line": lines["down"]},
+                    "left": {"wall": True, "line": lines["left"]},
                     "visited": False,
-                    "walls": self._calc_lines((dx, dy), (cell_size, cell_size)),
                 }
 
                 x, dx = (x + 1), (dx + cell_size)
@@ -141,10 +141,11 @@ class HuntAndKillMaze:
         x, y = pos
         w, h = size
 
-        # These lines segments creates a square.
-        up = ((x, y), (x + w, y))
-        right = ((x + w, y), (x + w, y + h))
-        down = ((x, y + h), (x + w, y + h))
-        left = ((x, y), (x, y + h))
+        lines = {
+            "up": {"start": (x, y), "end": (x + w, y)},
+            "right": {"start": (x + w, y), "end": (x + w, y + h)},
+            "down": {"start": (x, y + h), "end": (x + w, y + h)},
+            "left": {"start": (x, y), "end": (x, y + h)},
+        }
 
-        return [up, right, down, left]
+        return lines

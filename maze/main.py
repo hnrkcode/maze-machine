@@ -106,7 +106,9 @@ def main():
                         text_group, start_text, maze, cell_size, settings.GRID_SIZE
                     )
                     texts["cell_size"].update_text(f"Cell: {cell_size}x{cell_size}")
-                    texts["grid_size"].update_text(f"Grid: {grid_size[0]}x{grid_size[1]}")
+                    texts["grid_size"].update_text(
+                        f"Grid: {grid_size[0]}x{grid_size[1]}"
+                    )
 
                 if event.key == K_h:
                     h_key_held = True
@@ -130,39 +132,7 @@ def main():
             )
 
         # Draw all existing cell walls.
-        for cell in maze.grid.values():
-            if cell["up"]:
-                pygame.draw.line(
-                    screen,
-                    (255, 255, 255),
-                    cell["walls"][0][0],
-                    cell["walls"][0][1],
-                    width=1,
-                )
-            if cell["right"]:
-                pygame.draw.line(
-                    screen,
-                    (255, 255, 255),
-                    cell["walls"][1][0],
-                    cell["walls"][1][1],
-                    width=1,
-                )
-            if cell["down"]:
-                pygame.draw.line(
-                    screen,
-                    (255, 255, 255),
-                    cell["walls"][2][0],
-                    cell["walls"][2][1],
-                    width=1,
-                )
-            if cell["left"]:
-                pygame.draw.line(
-                    screen,
-                    (255, 255, 255),
-                    cell["walls"][3][0],
-                    cell["walls"][3][1],
-                    width=1,
-                )
+        draw_walls(screen, maze.grid)
 
         if text_group:
             text_group.draw(screen)
@@ -186,13 +156,28 @@ def reset(group, text, maze, size, grid_size):
 
 
 def text_layout(texts, pos, spacing):
-    "Set layout positions for text objects."
+    """Set layout positions for text objects."""
 
     x, y = pos
 
     for text in texts.values():
         text.set_pos((x, y))
         y += spacing
+
+
+def draw_walls(surface, grid, color=(255, 255, 255)):
+    """Draw all existing walls."""
+
+    for cell in grid.values():
+        for direction in ["up", "right", "down", "left"]:
+            if cell[direction]["wall"]:
+                pygame.draw.line(
+                    surface,
+                    color,
+                    cell[direction]["line"]["start"],
+                    cell[direction]["line"]["end"],
+                    width=1,
+                )
 
 
 if __name__ == "__main__":
