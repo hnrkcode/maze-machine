@@ -8,79 +8,74 @@ except ModuleNotFoundError:
 
 class HuntAndKillMaze:
     def __init__(self, start, grid_pos, grid_size, cell_size):
-        self.grid = self.generate_grid(grid_size, cell_size)
+        """Initialize the grid."""
+
+        self.grid = self._generate_grid(grid_size, cell_size)
 
     def kill_mode(self, grid, pos, grid_pos, grid_size, cell_size):
-        adjacents = self.get_adjacent(grid, grid_size, cell_size, pos)
+        """Open passages to unvisited neighbors, until the current cell has no unvisited neighbors."""
 
-        try:
-            direction = random.choice(list(adjacents.keys()))
-        except IndexError:
-            direction = "stop"
+        adjacents = self._get_adjacent(grid, grid_size, cell_size, pos)
+        direction = self._get_direction(adjacents)
 
-        if direction == "up":
-            grid[pos]["up"] = False
+        if direction in ["up", "right", "down", "left"]:
+            grid[pos][direction] = False
             grid[pos]["visited"] = True
             pos = adjacents[direction]
-            grid[pos]["down"] = False
-            grid[pos]["visited"] = True
-        elif direction == "right":
-            grid[pos]["right"] = False
-            grid[pos]["visited"] = True
-            pos = adjacents[direction]
-            grid[pos]["left"] = False
-            grid[pos]["visited"] = True
-        elif direction == "down":
-            grid[pos]["down"] = False
-            grid[pos]["visited"] = True
-            pos = adjacents[direction]
-            grid[pos]["up"] = False
-            grid[pos]["visited"] = True
-        elif direction == "left":
-            grid[pos]["left"] = False
-            grid[pos]["visited"] = True
-            pos = adjacents[direction]
-            grid[pos]["right"] = False
+            grid[pos][self._inverse(direction)] = False
             grid[pos]["visited"] = True
         else:
-            pos = self.hunt_mode(grid, grid_size, cell_size)
+            pos = self._hunt_mode(grid, grid_size, cell_size)
 
-            if pos == False:
-                return grid, pos
-
-            grid[pos]["visited"] = True
-            adjacents = self.get_adjacent(grid, grid_size, cell_size, pos, True)
-            direction = random.choice(list(adjacents.keys()))
-            grid[pos][direction] = False
-            grid[adjacents[direction]][self.inverse(direction)] = False
+            if pos:
+                grid[pos]["visited"] = True
+                adjacents = self._get_adjacent(grid, grid_size, cell_size, pos, True)
+                direction = self._get_direction(adjacents)
+                grid[pos][direction] = False
+                grid[adjacents[direction]][self._inverse(direction)] = False
 
         return grid, pos
 
-    def hunt_mode(self, grid, grid_size, cell_size):
+    def _hunt_mode(self, grid, grid_size, cell_size):
+        """Scan the grid for an unvisited cell that is adjacent to a visited cell."""
 
         for key, value in grid.items():
-            adjacents = self.get_adjacent(grid, grid_size, cell_size, key, True)
+            adjacents = self._get_adjacent(grid, grid_size, cell_size, key, True)
             if not value["visited"] and adjacents:
                 return key
 
         return False
 
-    def inverse(self, direction):
+    def _get_direction(self, adjacents):
+        """Return random direction."""
+
+        try:
+            direction = random.choice(list(adjacents))
+        except IndexError:
+            direction = None
+
+        return direction
+
+    def _inverse(self, direction):
+        """Return the inverse direction."""
+
         if direction == "up":
-            return "down"
-        if direction == "down":
-            return "up"
-        if direction == "left":
-            return "right"
-        if direction == "right":
-            return "left"
+            direction = "down"
+        elif direction == "down":
+            direction = "up"
+        elif direction == "left":
+            direction = "right"
+        elif direction == "right":
+            direction = "left"
 
-    def get_adjacent(self, grid, grid_size, cell_size, pos, visited=False):
+        return direction
 
-        w, h = int(grid_size[0] / cell_size), int(grid_size[1] / cell_size)
-        x, y = pos
+    def _get_adjacent(self, grid, grid_size, cell_size, pos, visited=False):
+        """Return dictionary with adjacent cells."""
 
         adjacents = {}
+        w, h = int(grid_size[0] / cell_size), int(grid_size[1] / cell_size)
+        x, y = pos
 
         if y > 0 and grid[(x, y - 1)]["visited"] == visited:
             adjacents["up"] = (x, y - 1)
@@ -96,14 +91,14 @@ class HuntAndKillMaze:
 
         return adjacents
 
-    def generate_grid(self, grid_size, cell_size):
+    def _generate_grid(self, grid_size, cell_size):
         """Create all cells in the grid."""
 
         cells = {}
-        grid_pos = self.calc_grid_pos(grid_size)
-        w, h = grid_size
         x, y = 0, 0
-        dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), grid_pos[1]
+        w, h = grid_size
+        grid_pos = self._calc_grid_pos(grid_size)
+        dx, dy = self._calc_dx(grid_pos, grid_size, cell_size), grid_pos[1]
 
         for _ in range(int(h / cell_size)):
             for _ in range(int(w / cell_size)):
@@ -113,17 +108,17 @@ class HuntAndKillMaze:
                     "down": True,
                     "left": True,
                     "visited": False,
-                    "walls": self.calc_lines((dx, dy), (cell_size, cell_size)),
+                    "walls": self._calc_lines((dx, dy), (cell_size, cell_size)),
                 }
 
                 x, dx = (x + 1), (dx + cell_size)
 
             x, y = 0, (y + 1)
-            dx, dy = self.calc_dx(grid_pos, grid_size, cell_size), (dy + cell_size)
+            dx, dy = self._calc_dx(grid_pos, grid_size, cell_size), (dy + cell_size)
 
         return cells
 
-    def calc_grid_pos(self, grid_size):
+    def _calc_grid_pos(self, grid_size):
         """Position grid in the center of the window."""
 
         x = int(settings.WIDTH / 2 - grid_size[0] / 2)
@@ -131,7 +126,7 @@ class HuntAndKillMaze:
 
         return (x, y)
 
-    def calc_dx(self, pos, size, cell):
+    def _calc_dx(self, pos, size, cell):
         """Keeps the grid horizontally centered on the screen."""
 
         x = pos[0]
@@ -140,10 +135,13 @@ class HuntAndKillMaze:
 
         return dx
 
-    def calc_lines(self, pos, size):
+    def _calc_lines(self, pos, size):
+        """Calculate start and end points of line segments of a cell."""
+
         x, y = pos
         w, h = size
 
+        # These lines segments creates a square.
         up = ((x, y), (x + w, y))
         right = ((x + w, y), (x + w, y + h))
         down = ((x, y + h), (x + w, y + h))
