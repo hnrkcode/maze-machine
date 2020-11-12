@@ -26,15 +26,27 @@ def main():
     w_key_held = False
     start = False
 
-    start_text = Text("Press ENTER to start", 50)
+    start_text = Text(
+        text="Press ENTER to start", size=settings.LARGE_TEXT, color=settings.TEXT_COLOR
+    )
     start_text.center_pos(settings.WIDTH)
 
-    reset_text = Text("Press R to reset", 50)
+    reset_text = Text(
+        text="Press R to reset", size=settings.LARGE_TEXT, color=settings.TEXT_COLOR
+    )
     reset_text.center_pos(settings.WIDTH)
 
     texts = {
-        "cell_size": Text(f"Cell: {cell_size}x{cell_size}", 20),
-        "grid_size": Text(f"Grid: {grid_size[0]}x{grid_size[1]}", 20),
+        "cell_size": Text(
+            text=f"Cell: {cell_size}x{cell_size}",
+            size=settings.MEDIUM_TEXT,
+            color=settings.TEXT_COLOR,
+        ),
+        "grid_size": Text(
+            text=f"Grid: {grid_size[0]}x{grid_size[1]}",
+            size=settings.MEDIUM_TEXT,
+            color=settings.TEXT_COLOR,
+        ),
     }
     text_layout(texts, (20, (settings.HEIGHT - grid_size[1]) / 2), 20)
 
@@ -57,9 +69,9 @@ def main():
             # Change cell size with scrolling.
             if event.type == MOUSEWHEEL and not h_key_held and not w_key_held:
                 if grid_size[0] / cell_size > 1 and grid_size[1] / cell_size > 1:
-                    if event.y > 0 and cell_size < 100:
+                    if event.y > 0 and cell_size < settings.HIGHEST_CELL_SIZE:
                         cell_size += 1
-                    if event.y < 0 and cell_size > 10:
+                    if event.y < 0 and cell_size > settings.LOWEST_CELL_SIZE:
                         cell_size -= 1
 
                 start, maze, grid_size = reset(
@@ -69,7 +81,7 @@ def main():
 
             # Change grid width.
             if event.type == MOUSEWHEEL and w_key_held:
-                if event.y > 0 and grid_size[0] < settings.GRID_SIZE[0]:
+                if event.y > 0 and grid_size[0] < settings.GRID_WIDTH:
                     grid_size[0] += cell_size
                 if event.y < 0 and (grid_size[0] - cell_size) > cell_size:
                     grid_size[0] -= cell_size
@@ -81,7 +93,7 @@ def main():
 
             # Change grid height.
             if event.type == MOUSEWHEEL and h_key_held:
-                if event.y > 0 and grid_size[1] < settings.GRID_SIZE[1]:
+                if event.y > 0 and grid_size[1] < settings.GRID_HEIGHT:
                     grid_size[1] += cell_size
                 if event.y < 0 and (grid_size[1] - cell_size) > cell_size:
                     grid_size[1] -= cell_size
@@ -132,7 +144,7 @@ def main():
             )
 
         # Draw all existing cell walls.
-        draw_walls(screen, maze.grid)
+        draw_walls(screen, maze.grid, settings.GRID_COLOR)
 
         if text_group:
             text_group.draw(screen)
@@ -165,7 +177,7 @@ def text_layout(texts, pos, spacing):
         y += spacing
 
 
-def draw_walls(surface, grid, color=(255, 255, 255)):
+def draw_walls(surface, grid, color):
     """Draw all existing walls."""
 
     for cell in grid.values():
