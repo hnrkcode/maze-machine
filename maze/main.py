@@ -6,6 +6,7 @@ from pygame.locals import *
 
 try:
     from maze.algorithm.maze import HuntAndKillMaze as Maze
+    from maze.algorithm.path import bfs, draw_path
     from maze.utils import settings
     from maze.utils.text import Text
 except ModuleNotFoundError:
@@ -25,6 +26,7 @@ def main():
     h_key_held = False
     w_key_held = False
     start = False
+    path = []
 
     start_text = Text(
         text="Press ENTER to start", size=settings.LARGE_TEXT, color=settings.TEXT_COLOR
@@ -74,7 +76,7 @@ def main():
                     if event.y < 0 and cell_size > settings.LOWEST_CELL_SIZE:
                         cell_size -= 1
 
-                start, maze, grid_size = reset(
+                start, maze, grid_size, path = reset(
                     text_group, start_text, maze, cell_size, grid_size
                 )
                 texts["cell_size"].update_text(f"Cell: {cell_size}x{cell_size}")
@@ -86,7 +88,7 @@ def main():
                 if event.y < 0 and (grid_size[0] - cell_size) > cell_size:
                     grid_size[0] -= cell_size
 
-                start, maze, grid_size = reset(
+                start, maze, grid_size, path = reset(
                     text_group, start_text, maze, cell_size, grid_size
                 )
                 texts["grid_size"].update_text(f"Grid: {grid_size[0]}x{grid_size[1]}")
@@ -98,7 +100,7 @@ def main():
                 if event.y < 0 and (grid_size[1] - cell_size) > cell_size:
                     grid_size[1] -= cell_size
 
-                start, maze, grid_size = reset(
+                start, maze, grid_size, path = reset(
                     text_group, start_text, maze, cell_size, grid_size
                 )
                 texts["grid_size"].update_text(f"Grid: {grid_size[0]}x{grid_size[1]}")
@@ -114,13 +116,19 @@ def main():
                 # Reset everything.
                 if event.key == K_r:
                     cell_size = settings.CELL_SIZE
-                    start, maze, grid_size = reset(
+                    start, maze, grid_size, path = reset(
                         text_group, start_text, maze, cell_size, settings.GRID_SIZE
                     )
                     texts["cell_size"].update_text(f"Cell: {cell_size}x{cell_size}")
                     texts["grid_size"].update_text(
                         f"Grid: {grid_size[0]}x{grid_size[1]}"
                     )
+
+                # Find the shortest path from start to finish.
+                if event.key == K_s:
+                    start_point = list(maze.grid)[0]
+                    end_point = list(maze.grid)[-1]
+                    path = bfs(maze.grid, start_point, end_point)
 
                 if event.key == K_h:
                     h_key_held = True
@@ -143,6 +151,9 @@ def main():
                 cell_size,
             )
 
+        if path:
+            draw_path(screen, path, maze.grid, (255, 155, 55))
+
         # Draw all existing cell walls.
         draw_walls(screen, maze.grid, settings.GRID_COLOR)
 
@@ -163,8 +174,9 @@ def reset(group, text, maze, size, grid_size):
     group.add(text)
     maze = Maze(start, settings.GRID_POS, grid_size, size)
     grid_size = list(grid_size)
+    path = []
 
-    return start, maze, grid_size
+    return start, maze, grid_size, path
 
 
 def text_layout(texts, pos, spacing):
