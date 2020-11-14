@@ -18,6 +18,7 @@ python3 run.py
 |:-----|-------|
 | `Enter` | Run algorithm |
 | `R`     | Reset |
+| `S`     | Solve the maze |
 | `SCROLL` | Change cell size |
 | hold `W` & `SCROLL` | Change grid width |
 | hold `H` & `SCROLL` | Change grid height |
