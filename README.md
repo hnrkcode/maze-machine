@@ -23,3 +23,21 @@ python3 run.py
 | hold `W` & `SCROLL` | Change grid width |
 | hold `H` & `SCROLL` | Change grid height |
 | `ESC`   | Exit program |
+
+## Development
+
+```sh
+pipenv install --dev
+```
+
+## Run tests
+
+```sh
+pytest
+```
+
+## Test coverage
+
+```sh
+pytest --cov=maze tests
+```
